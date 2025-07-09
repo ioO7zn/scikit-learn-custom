@@ -98,6 +98,7 @@ def _parallel_build_estimators(
     verbose,
     check_input,
     fit_params,
+    feature_weights=None,  # ← 追加！
 ):
     """Private function used to build a batch of estimators within a job."""
     # Retrieve settings
@@ -109,6 +110,7 @@ def _parallel_build_estimators(
     has_check_input = has_fit_parameter(ensemble.estimator_, "check_input")
     requires_feature_indexing = bootstrap_features or max_features != n_features
 
+    print("_bagging参上")
     # Build estimators
     estimators = []
     estimators_features = []
@@ -184,7 +186,7 @@ def _parallel_build_estimators(
 
             fit_params_["sample_weight"] = curr_sample_weight
             X_ = X[:, features] if requires_feature_indexing else X
-            estimator_fit(X_, y, **fit_params_)
+            estimator_fit(X_, y, feature_weights=feature_weights, **fit_params_)
         else:
             # cannot use sample_weight, so use indexing
             y_ = _safe_indexing(y, indices)
@@ -192,7 +194,7 @@ def _parallel_build_estimators(
             fit_params_ = _check_method_params(X, params=fit_params_, indices=indices)
             if requires_feature_indexing:
                 X_ = X_[:, features]
-            estimator_fit(X_, y_, **fit_params_)
+            estimator_fit(X_, y_, feature_weights=feature_weights, **fit_params_)
 
         estimators.append(estimator)
         estimators_features.append(features)
@@ -340,7 +342,7 @@ class BaseBagging(BaseEnsemble, metaclass=ABCMeta):
         # BaseBagging.estimator is not validated yet
         prefer_skip_nested_validation=False
     )
-    def fit(self, X, y, sample_weight=None, **fit_params):
+    def fit(self, X, y, sample_weight=None,feature_weights=None, **fit_params):
         """Build a Bagging ensemble of estimators from the training set (X, y).
 
         Parameters
@@ -391,6 +393,7 @@ class BaseBagging(BaseEnsemble, metaclass=ABCMeta):
             y,
             max_samples=self.max_samples,
             sample_weight=sample_weight,
+            feature_weights=feature_weights,
             **fit_params,
         )
 
@@ -405,8 +408,10 @@ class BaseBagging(BaseEnsemble, metaclass=ABCMeta):
         max_depth=None,
         check_input=True,
         sample_weight=None,
+        feature_weights=None,
         **fit_params,
     ):
+        print(f"baggingfeature_weightsは{feature_weights}")
         """Build a Bagging ensemble of estimators from the training
            set (X, y).
 
@@ -557,6 +562,7 @@ class BaseBagging(BaseEnsemble, metaclass=ABCMeta):
                 verbose=self.verbose,
                 check_input=check_input,
                 fit_params=routed_params.estimator.fit,
+                feature_weights=feature_weights,  # ← 追加！
             )
             for i in range(n_jobs)
         )

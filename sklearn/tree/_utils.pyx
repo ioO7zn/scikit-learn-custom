@@ -5,6 +5,8 @@ from libc.stdlib cimport free
 from libc.stdlib cimport realloc
 from libc.math cimport log as ln
 from libc.math cimport isnan
+from libc.stdio cimport printf, fflush, stdout
+
 
 import numpy as np
 cimport numpy as cnp
@@ -60,6 +62,48 @@ cdef inline float64_t rand_uniform(float64_t low, float64_t high,
     """Generate a random float64_t in [low; high)."""
     return ((high - low) * <float64_t> our_rand_r(random_state) /
             <float64_t> RAND_R_MAX) + low
+
+
+cdef inline int weighted_choice(
+    float64_t[:] weights,
+    int start,
+    int end,
+    uint32_t* random_state
+) noexcept nogil:
+    cdef float64_t total = 0.0
+    cdef float64_t r, cumsum = 0.0
+    cdef int i
+
+    with gil:
+        print(">>> weighted_choice 呼ばれた")
+        print(f"  start = {start}, end = {end}")
+        print(f"  len(weights) = {weights.shape[0]}")
+        for i in range(start, min(end, start + 5)):
+            print(f"  weights[{i}] = {weights[i]:.4f}")
+        fflush(stdout)
+
+    for i in range(start, end):
+        total += weights[i]
+
+    if total <= 0.0:
+        with gil:
+            print(f">>> total = {total}, fallback to rand_int")
+        return rand_int(start, end, random_state)
+
+    with gil:
+        print(f">>> total = {total:.4f}")
+    r = rand_uniform(0.0, total, random_state)
+    with gil:
+        print(f">>> rand_uniform -> r = {r:.4f}")
+
+    for i in range(start, end):
+        cumsum += weights[i]
+        if r < cumsum:
+            return i
+
+    return end - 1
+
+
 
 
 cdef inline float64_t log(float64_t x) noexcept nogil:

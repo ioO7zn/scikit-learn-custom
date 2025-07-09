@@ -17,8 +17,10 @@ of splitting strategies:
   from a subset of the best splits. This method is faster but does
   not guarantee the optimal split.
 """
+import numpy as np
 # Authors: The scikit-learn developers
 # SPDX-License-Identifier: BSD-3-Clause
+from libc.stdio cimport printf, fflush, stdout
 
 from libc.string cimport memcpy
 
@@ -28,9 +30,7 @@ from ._partitioner cimport (
     FEATURE_THRESHOLD, DensePartitioner, SparsePartitioner,
     shift_missing_values_to_left_if_required
 )
-from ._utils cimport RAND_R_MAX, rand_int, rand_uniform
-
-import numpy as np
+from ._utils cimport RAND_R_MAX, rand_int, rand_uniform, weighted_choice
 
 # Introduce a fused-class to make it possible to share the split implementation
 # between the dense and sparse cases in the node_split_best and node_split_random
@@ -130,7 +130,12 @@ cdef class Splitter:
         const float64_t[:, ::1] y,
         const float64_t[:] sample_weight,
         const uint8_t[::1] missing_values_in_feature_mask,
+        float64_t[:] feature_weights  # ← 追加
     ) except -1:
+
+        print(f"[Cython INIT] X.shape = {X.shape if hasattr(X, 'shape') else 'NO SHAPE'}")
+        print(f"[Cython INIT] feature_weights.shape = {feature_weights.shape[0]}")
+        print(f"[Cython INIT] type(feature_weights) = {type(feature_weights)}")
         """Initialize the splitter.
 
         Take in the input data X, the target Y, and optional sample weights.
@@ -196,6 +201,10 @@ cdef class Splitter:
         self.sample_weight = sample_weight
         if missing_values_in_feature_mask is not None:
             self.criterion.init_sum_missing()
+
+        # feature_weightsを保持
+        self.feature_weights = feature_weights
+        
         return 0
 
     cdef int node_reset(
@@ -238,7 +247,7 @@ cdef class Splitter:
         self,
         ParentInfo* parent_record,
         SplitRecord* split,
-    ) except -1 nogil:
+    ) except -1: #nogil:
 
         """Find the best split on node samples[start:end].
 
@@ -356,7 +365,7 @@ cdef inline int node_split_best(
         # - [f_i:n_features[ holds features that have been drawn
         #   and aren't constant.
 
-        # Draw a feature at random
+        # Draw a feature at random        
         f_j = rand_int(n_drawn_constants, f_i - n_found_constants,
                        random_state)
 
@@ -545,6 +554,7 @@ cdef inline int node_split_random(
     Criterion criterion,
     SplitRecord* split,
     ParentInfo* parent_record,
+    float64_t[:] feature_weights_view,  # ←追加
 ) except -1 nogil:
     """Find the best random split on node samples[start:end]
 
@@ -594,6 +604,10 @@ cdef inline int node_split_random(
     cdef float32_t min_feature_value
     cdef float32_t max_feature_value
 
+    with gil:
+        print("node_split_random 入ったで");
+        fflush(stdout);
+
     _init_split(&best_split, end)
 
     partitioner.init_node_split(start, end)
@@ -626,8 +640,17 @@ cdef inline int node_split_random(
         #   and aren't constant.
 
         # Draw a feature at random
-        f_j = rand_int(n_drawn_constants, f_i - n_found_constants,
-                       random_state)
+        #ランダムから重み付きへ変更
+        #f_j = rand_int(n_drawn_constants, f_i - n_found_constants, random_state)
+
+        # feature_weights は numpy.ndarray として Python 側から渡すように
+        with gil:
+            print(f"fi ={f_i},n_features={n_features},n_found_constants={n_found_constants}") 
+            print(f"weighted_choice 呼び出し前: weights_len={len(feature_weights_view)}, start={start}, end={end}")
+        f_j = weighted_choice(feature_weights_view, n_drawn_constants, f_i - n_found_constants, random_state)
+        with gil:
+            print(f"node_split_random: feature = {feature_weights_view}")
+
 
         if f_j < n_known_constants:
             # f_j in the interval [n_drawn_constants, n_known_constants[
@@ -786,6 +809,9 @@ cdef inline int node_split_random(
     # Return values
     parent_record.n_constant_features = n_total_constants
     split[0] = best_split
+    with gil:
+        print("node_split_random 多分終わったで");
+        fflush(stdout);
     return 0
 
 
@@ -798,8 +824,10 @@ cdef class BestSplitter(Splitter):
         const float64_t[:, ::1] y,
         const float64_t[:] sample_weight,
         const uint8_t[::1] missing_values_in_feature_mask,
+        float64_t[:] feature_weights  # ← 追加
     ) except -1:
-        Splitter.init(self, X, y, sample_weight, missing_values_in_feature_mask)
+        self.feature_weights = feature_weights
+        Splitter.init(self, X, y, sample_weight, missing_values_in_feature_mask, feature_weights)
         self.partitioner = DensePartitioner(
             X, self.samples, self.feature_values, missing_values_in_feature_mask
         )
@@ -808,7 +836,7 @@ cdef class BestSplitter(Splitter):
             self,
             ParentInfo* parent_record,
             SplitRecord* split,
-    ) except -1 nogil:
+    ) except -1: #nogil:
         return node_split_best(
             self,
             self.partitioner,
@@ -826,8 +854,10 @@ cdef class BestSparseSplitter(Splitter):
         const float64_t[:, ::1] y,
         const float64_t[:] sample_weight,
         const uint8_t[::1] missing_values_in_feature_mask,
+        float64_t[:] feature_weights  # ← 追加
     ) except -1:
-        Splitter.init(self, X, y, sample_weight, missing_values_in_feature_mask)
+        self.feature_weights = feature_weights
+        Splitter.init(self, X, y, sample_weight, missing_values_in_feature_mask, feature_weights)
         self.partitioner = SparsePartitioner(
             X, self.samples, self.n_samples, self.feature_values, missing_values_in_feature_mask
         )
@@ -836,7 +866,7 @@ cdef class BestSparseSplitter(Splitter):
             self,
             ParentInfo* parent_record,
             SplitRecord* split,
-    ) except -1 nogil:
+    ) except -1: #nogil:
         return node_split_best(
             self,
             self.partitioner,
@@ -854,8 +884,10 @@ cdef class RandomSplitter(Splitter):
         const float64_t[:, ::1] y,
         const float64_t[:] sample_weight,
         const uint8_t[::1] missing_values_in_feature_mask,
+        float64_t[:] feature_weights  # ← 追加
     ) except -1:
-        Splitter.init(self, X, y, sample_weight, missing_values_in_feature_mask)
+        self.feature_weights = feature_weights
+        Splitter.init(self, X, y, sample_weight, missing_values_in_feature_mask, feature_weights)
         self.partitioner = DensePartitioner(
             X, self.samples, self.feature_values, missing_values_in_feature_mask
         )
@@ -864,13 +896,16 @@ cdef class RandomSplitter(Splitter):
             self,
             ParentInfo* parent_record,
             SplitRecord* split,
-    ) except -1 nogil:
+    ) except -1:
+        cdef float64_t[:] feature_weights_view = self.feature_weights
+        print("node_split呼ばれたで(rs)")
         return node_split_random(
             self,
             self.partitioner,
             self.criterion,
             split,
             parent_record,
+            feature_weights_view,  # 追加
         )
 
 cdef class RandomSparseSplitter(Splitter):
@@ -882,8 +917,10 @@ cdef class RandomSparseSplitter(Splitter):
         const float64_t[:, ::1] y,
         const float64_t[:] sample_weight,
         const uint8_t[::1] missing_values_in_feature_mask,
+        float64_t[:] feature_weights  # ← 追加
     ) except -1:
-        Splitter.init(self, X, y, sample_weight, missing_values_in_feature_mask)
+        self.feature_weights = feature_weights
+        Splitter.init(self, X, y, sample_weight, missing_values_in_feature_mask, feature_weights)
         self.partitioner = SparsePartitioner(
             X, self.samples, self.n_samples, self.feature_values, missing_values_in_feature_mask
         )
@@ -891,11 +928,15 @@ cdef class RandomSparseSplitter(Splitter):
             self,
             ParentInfo* parent_record,
             SplitRecord* split,
-    ) except -1 nogil:
+    ) except -1:
+        print("node_split呼ばれたで(rss)")
+        cdef float64_t[:] feature_weights_view = self.feature_weights
+
         return node_split_random(
             self,
             self.partitioner,
             self.criterion,
             split,
             parent_record,
+            feature_weights_view,  # 追加
         )

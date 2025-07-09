@@ -235,6 +235,7 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
         sample_weight=None,
         check_input=True,
         missing_values_in_feature_mask=None,
+        feature_weights=None,
     ):
         random_state = check_random_state(self.random_state)
 
@@ -437,16 +438,20 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
                 random_state,
                 monotonic_cst,
             )
-
+        print(f"class1のfeature_weightsはnn{self.feature_weights}")
+        #print(f"selftreeclsaaのfeature_weightsはnn{self.tree_feature_weights}")
         if is_classifier(self):
-            self.tree_ = Tree(self.n_features_in_, self.n_classes_, self.n_outputs_)
+            self.tree_ = Tree(self.n_features_in_, self.n_classes_, self.n_outputs_, feature_weights=feature_weights)
         else:
             self.tree_ = Tree(
                 self.n_features_in_,
                 # TODO: tree shouldn't need this in this case
                 np.array([1] * self.n_outputs_, dtype=np.intp),
                 self.n_outputs_,
+                feature_weights=feature_weights,
             )
+
+            self.tree_.feature_weights = feature_weights
 
         # Use BestFirst if max_leaf_nodes given; use DepthFirst otherwise
         if max_leaf_nodes < 0:
@@ -468,8 +473,8 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
                 max_leaf_nodes,
                 self.min_impurity_decrease,
             )
-
-        builder.build(self.tree_, X, y, sample_weight, missing_values_in_feature_mask)
+        print(f"classesのfeature_weightsは{self.feature_weights}")
+        builder.build(self.tree_, X, y, sample_weight, missing_values_in_feature_mask, feature_weights= feature_weights,)
 
         if self.n_outputs_ == 1 and is_classifier(self):
             self.n_classes_ = self.n_classes_[0]
@@ -991,7 +996,7 @@ class DecisionTreeClassifier(ClassifierMixin, BaseDecisionTree):
         )
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y, sample_weight=None, check_input=True):
+    def fit(self, X, y, sample_weight=None, check_input=True, feature_weights=None):
         """Build a decision tree classifier from the training set (X, y).
 
         Parameters
@@ -1026,6 +1031,7 @@ class DecisionTreeClassifier(ClassifierMixin, BaseDecisionTree):
             y,
             sample_weight=sample_weight,
             check_input=check_input,
+            feature_weights=feature_weights
         )
         return self
 
@@ -1355,6 +1361,7 @@ class DecisionTreeRegressor(RegressorMixin, BaseDecisionTree):
         min_impurity_decrease=0.0,
         ccp_alpha=0.0,
         monotonic_cst=None,
+        feature_weights=None,  # ここを追加
     ):
         super().__init__(
             criterion=criterion,
@@ -1370,9 +1377,10 @@ class DecisionTreeRegressor(RegressorMixin, BaseDecisionTree):
             ccp_alpha=ccp_alpha,
             monotonic_cst=monotonic_cst,
         )
+        self.feature_weights = feature_weights
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y, sample_weight=None, check_input=True):
+    def fit(self, X, y, sample_weight=None, check_input=True,feature_weights=None):
         """Build a decision tree regressor from the training set (X, y).
 
         Parameters
@@ -1401,11 +1409,15 @@ class DecisionTreeRegressor(RegressorMixin, BaseDecisionTree):
             Fitted estimator.
         """
 
+        if feature_weights is not None:
+            self.feature_weights = feature_weights
+
         super()._fit(
             X,
             y,
             sample_weight=sample_weight,
             check_input=check_input,
+            feature_weights=feature_weights
         )
         return self
 
@@ -1968,6 +1980,7 @@ class ExtraTreeRegressor(DecisionTreeRegressor):
         max_leaf_nodes=None,
         ccp_alpha=0.0,
         monotonic_cst=None,
+        feature_weights=None,  # ここを追加
     ):
         super().__init__(
             criterion=criterion,
@@ -1983,6 +1996,7 @@ class ExtraTreeRegressor(DecisionTreeRegressor):
             ccp_alpha=ccp_alpha,
             monotonic_cst=monotonic_cst,
         )
+        self.feature_weights = feature_weights  # 保存しておく
 
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()

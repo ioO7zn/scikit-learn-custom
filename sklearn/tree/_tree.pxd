@@ -77,7 +77,9 @@ cdef class Tree:
 
     cpdef compute_node_depths(self)
     cpdef compute_feature_importances(self, normalize=*)
-
+    
+    #cdef double* feature_weights
+    cdef public object feature_weights  # ← ✅ OK
 
 # =============================================================================
 # Tree builder
@@ -106,6 +108,7 @@ cdef class TreeBuilder:
         const float64_t[:, ::1] y,
         const float64_t[:] sample_weight=*,
         const uint8_t[::1] missing_values_in_feature_mask=*,
+        float64_t[:] feature_weights =* # 新たに追加
     )
 
     cdef _check_input(

@@ -3,7 +3,7 @@
 
 from cpython cimport Py_INCREF, PyObject, PyTypeObject
 
-from libc.stdlib cimport free
+from libc.stdlib cimport free, malloc
 from libc.string cimport memcpy
 from libc.string cimport memset
 from libc.stdint cimport INTPTR_MAX
@@ -81,6 +81,7 @@ cdef class TreeBuilder:
         const float64_t[:, ::1] y,
         const float64_t[:] sample_weight=None,
         const uint8_t[::1] missing_values_in_feature_mask=None,
+        float64_t[:] feature_weights = None # 新たに追加
     ):
         """Build a decision tree from the training set (X, y)."""
         pass
@@ -145,6 +146,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder):
         const float64_t[:, ::1] y,
         const float64_t[:] sample_weight=None,
         const uint8_t[::1] missing_values_in_feature_mask=None,
+        float64_t[:] feature_weights = None  # 新たに追加
     ):
         """Build a decision tree from the training set (X, y)."""
 
@@ -169,8 +171,16 @@ cdef class DepthFirstTreeBuilder(TreeBuilder):
         cdef intp_t min_samples_split = self.min_samples_split
         cdef float64_t min_impurity_decrease = self.min_impurity_decrease
 
+        print(f"treeのfeature_weightsは{feature_weights}")
+
         # Recursive partition (without actual recursion)
-        splitter.init(X, y, sample_weight, missing_values_in_feature_mask)
+        splitter.init(
+            X, 
+            y, 
+            sample_weight, 
+            missing_values_in_feature_mask, 
+            feature_weights  # 追加：Pythonから渡された重み配列
+        )
 
         cdef intp_t start
         cdef intp_t end
@@ -242,10 +252,11 @@ cdef class DepthFirstTreeBuilder(TreeBuilder):
                 is_leaf = is_leaf or parent_record.impurity <= EPSILON
 
                 if not is_leaf:
-                    splitter.node_split(
-                        &parent_record,
-                        &split,
-                    )
+                    with gil:
+                        splitter.node_split(
+                            &parent_record,
+                            &split,
+                        )
                     # If EPSILON=0 in the below comparison, float precision
                     # issues stop splitting, producing trees that are
                     # dissimilar to v0.18
@@ -400,6 +411,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
         const float64_t[:, ::1] y,
         const float64_t[:] sample_weight=None,
         const uint8_t[::1] missing_values_in_feature_mask=None,
+        float64_t[:] feature_weights = None  # 新たに追加
     ):
         """Build a decision tree from the training set (X, y)."""
 
@@ -411,7 +423,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
         cdef intp_t max_leaf_nodes = self.max_leaf_nodes
 
         # Recursive partition (without actual recursion)
-        splitter.init(X, y, sample_weight, missing_values_in_feature_mask)
+        splitter.init(X, y, sample_weight, missing_values_in_feature_mask, feature_weights)
 
         cdef vector[FrontierRecord] frontier
         cdef FrontierRecord record
@@ -599,10 +611,11 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
                    )
 
         if not is_leaf:
-            splitter.node_split(
-                parent_record,
-                &split,
-            )
+            with gil:
+                splitter.node_split(
+                    parent_record,
+                    &split,
+                )
             # If EPSILON=0 in the below comparison, float precision issues stop
             # splitting early, producing trees that are dissimilar to v0.18
             is_leaf = (is_leaf or split.pos >= end or
@@ -768,10 +781,20 @@ cdef class Tree:
 
     # TODO: Convert n_classes to cython.integral memory view once
     #  https://github.com/cython/cython/issues/5243 is fixed
-    def __cinit__(self, intp_t n_features, cnp.ndarray n_classes, intp_t n_outputs):
+    def __cinit__(self, intp_t n_features, cnp.ndarray n_classes, intp_t n_outputs, feature_weights=None):
         """Constructor."""
         cdef intp_t dummy = 0
+        cdef cnp.ndarray[double, ndim=1] fw_array
         size_t_dtype = np.array(dummy).dtype
+         
+        if feature_weights is not None:
+            self.feature_weights = np.asarray(feature_weights, dtype=np.float64)
+        else:
+            self.feature_weights = None
+        
+        #入れてみた!
+        print("DEBUG: _tree module was rebuilt and this message comes from the new binary!出来たか？")
+        print(f"treeのfeature_weightsは{self.feature_weights}")
 
         n_classes = _check_n_classes(n_classes, size_t_dtype)
 

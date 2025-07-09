@@ -256,7 +256,9 @@ class IsolationForest(OutlierMixin, BaseBagging):
         random_state=None,
         verbose=0,
         warm_start=False,
+        feature_weights=None, #重み
     ):
+        print("[DEBUG] IsolationForest __init__ called")  # ← ここがログ！
         super().__init__(
             estimator=None,
             # here above max_features has no links with self.max_features
@@ -270,7 +272,7 @@ class IsolationForest(OutlierMixin, BaseBagging):
             random_state=random_state,
             verbose=verbose,
         )
-
+        self.feature_weights = feature_weights
         self.contamination = contamination
 
     def _get_estimator(self):
@@ -279,6 +281,7 @@ class IsolationForest(OutlierMixin, BaseBagging):
             max_features=1,
             splitter="random",
             random_state=self.random_state,
+            feature_weights=self.feature_weights,
         )
 
     def _set_oob_score(self, X, y):
@@ -292,7 +295,7 @@ class IsolationForest(OutlierMixin, BaseBagging):
         return {"prefer": "threads"}
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y=None, sample_weight=None):
+    def fit(self, X, y=None, sample_weight=None, feature_weights=None):
         """
         Fit estimator.
 
@@ -321,6 +324,19 @@ class IsolationForest(OutlierMixin, BaseBagging):
             # Pre-sort indices to avoid that each individual tree of the
             # ensemble sorts the indices.
             X.sort_indices()
+        
+        n_features = X.shape[1]
+        if feature_weights is None:
+            feature_weights = np.ones(n_features, dtype=np.float64)
+        else:
+            feature_weights = np.asarray(feature_weights, dtype=np.float64)
+            if feature_weights.shape[0] != n_features:
+                raise ValueError(f"feature_weights length must be {n_features}")
+        self.feature_weights = feature_weights
+        print(f"selffeature_weightsは{self.feature_weights}")
+        print(f"selff_n_featuresは{n_features}")
+
+
 
         rnd = check_random_state(self.random_state)
         y = rnd.uniform(size=X.shape[0])
@@ -354,6 +370,7 @@ class IsolationForest(OutlierMixin, BaseBagging):
             max_depth=max_depth,
             sample_weight=sample_weight,
             check_input=False,
+            feature_weights=self.feature_weights  # ← このような形で渡せるよう準備
         )
 
         self._average_path_length_per_tree, self._decision_path_lengths = zip(

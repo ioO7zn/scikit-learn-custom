@@ -61,6 +61,8 @@ cdef class Splitter:
     cdef bint with_monotonic_cst
     cdef const float64_t[:] sample_weight
 
+    cdef float64_t[:] feature_weights
+
     # The samples vector `samples` is maintained by the Splitter object such
     # that the samples contained in a node are contiguous. With this setting,
     # `node_split` reorganizes the node samples `samples[start:end]` in two
@@ -84,6 +86,7 @@ cdef class Splitter:
         const float64_t[:, ::1] y,
         const float64_t[:] sample_weight,
         const uint8_t[::1] missing_values_in_feature_mask,
+        float64_t[:] feature_weights  # ← 追加
     ) except -1
 
     cdef int node_reset(
@@ -97,7 +100,7 @@ cdef class Splitter:
         self,
         ParentInfo* parent,
         SplitRecord* split,
-    ) except -1 nogil
+    ) except -1
 
     cdef void node_value(self, float64_t* dest) noexcept nogil
 

@@ -159,6 +159,7 @@ def _parallel_build_trees(
     class_weight=None,
     n_samples_bootstrap=None,
     missing_values_in_feature_mask=None,
+    feature_weights=None,  # ★ 追加
 ):
     """
     Private function used to fit a single tree in parallel."""
@@ -191,6 +192,7 @@ def _parallel_build_trees(
             sample_weight=curr_sample_weight,
             check_input=False,
             missing_values_in_feature_mask=missing_values_in_feature_mask,
+            feature_weights=feature_weights,  # ★ 追加
         )
     else:
         tree._fit(
@@ -199,6 +201,7 @@ def _parallel_build_trees(
             sample_weight=sample_weight,
             check_input=False,
             missing_values_in_feature_mask=missing_values_in_feature_mask,
+            feature_weights=feature_weights,  # ★ 追加
         )
 
     return tree
@@ -352,6 +355,9 @@ class BaseForest(MultiOutputMixin, BaseEnsemble, metaclass=ABCMeta):
         self : object
             Fitted estimator.
         """
+        n_features = X.shape[1]
+        self.feature_weights_ = np.ones(n_features, dtype=np.float64)
+        print(f"selffeature_weightsは{self.feature_weights_}")
         # Validate or convert input data
         if issparse(y):
             raise ValueError("sparse multilabel-indicator for y is not supported.")
@@ -500,6 +506,7 @@ class BaseForest(MultiOutputMixin, BaseEnsemble, metaclass=ABCMeta):
                     class_weight=self.class_weight,
                     n_samples_bootstrap=n_samples_bootstrap,
                     missing_values_in_feature_mask=missing_values_in_feature_mask,
+                    feature_weights=self.feature_weights_,  # ★ ここで渡す変数（後述）
                 )
                 for i, t in enumerate(trees)
             )
