@@ -1,0 +1,219 @@
+[33mcommit d4d4af8c471c60d183d0cb67e14e6434b0ebb9fb[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Lucy Liu <jliu176@gmail.com>
+Date:   Sat Jun 14 01:26:20 2025 +1000
+
+    MNT Move `entropy` to private function (#31294)
+    
+    Co-authored-by: Jérémie du Boisberranger <jeremie@probabl.ai>
+
+[33mcommit 4872503b3dcc951d62dfdad264a27cfad5d370a6[m
+Author: ayoub.agouzoul <34219939+TheAyos@users.noreply.github.com>
+Date:   Fri Jun 13 15:39:55 2025 +0200
+
+    TST use global_random_seed in sklearn/feature_extraction/tests/test_image.py (#31310)
+
+[33mcommit 008d47aeb2d4da2bcdd321468fb5f5573b7b9cd0[m
+Author: Reshama Shaikh <reshama.stat@gmail.com>
+Date:   Fri Jun 13 09:29:16 2025 -0400
+
+    DOC Update About Us page (#31519)
+
+[33mcommit 8eabbed0490c2cbd9dc60206a5549b669c05f71c[m
+Author: Christian Veenhuis <124370897+ChVeen@users.noreply.github.com>
+Date:   Fri Jun 13 11:13:13 2025 +0200
+
+    MAINT: remove unused local vars in mixture._gaussian_mixture.py (#31432)
+
+[33mcommit 60928465d274ec5880c18d58b2ddbaf95bcda18c[m
+Author: Fabrizio Damicelli <40115969+fabridamicelli@users.noreply.github.com>
+Date:   Fri Jun 13 09:56:44 2025 +0200
+
+    ENH Improve error message in `check_requires_y_none` (#31481)
+
+[33mcommit 082eb5da4c06299660da5b16fa7de0cd8bad43fc[m
+Author: Stefanie Senger <91849487+StefanieSenger@users.noreply.github.com>
+Date:   Fri Jun 13 08:16:30 2025 +0200
+
+    DOC Clarify metadata routing docs from `_metadata_requests.py` module (#31419)
+    
+    Co-authored-by: Lucy Liu <jliu176@gmail.com>
+    Co-authored-by: Adrin Jalali <adrin.jalali@gmail.com>
+
+[33mcommit 6ac2cb39e1021562929309d2b6024e266915ef32[m
+Author: Loic Esteve <loic.esteve@ymail.com>
+Date:   Thu Jun 12 17:23:09 2025 +0200
+
+    CI Fix wheels build after cibuildwheel 3.0 release (#31532)
+
+[33mcommit d171a3c0422b854c4dd63c0c78e4468f71a65dd5[m
+Author: Evgeni Burovski <evgeny.burovskiy@gmail.com>
+Date:   Thu Jun 12 13:12:31 2025 +0200
+
+    Preemptively fix incompatibilities with an upcoming array-api-strict release (#31517)
+
+[33mcommit 9f8668182ab1492923057aca05ce6f2de38af02d[m
+Author: Ayrat <ayrat.khalimov@gmail.com>
+Date:   Thu Jun 12 11:11:12 2025 +0200
+
+    DOC Scale data before using k-neighbours regression (#31201)
+    
+    Co-authored-by: Olivier Grisel <olivier.grisel@ensta.org>
+    Co-authored-by: Arturo Amor <86408019+ArturoAmorQ@users.noreply.github.com>
+    Co-authored-by: Virgil Chan <virchan.math@gmail.com>
+    Co-authored-by: Tim Head <betatim@gmail.com>
+
+[33mcommit d03054b0218a6770e552749d39ec699b53cfed8c[m
+Author: Lucy Liu <jliu176@gmail.com>
+Date:   Thu Jun 12 19:03:54 2025 +1000
+
+    FIX Remove `median_absolute_error` from `METRICS_WITHOUT_SAMPLE_WEIGHT` (#30787)
+
+[33mcommit aa8b11324399a6c80324f46ce367a43b02471441[m
+Author: Adrin Jalali <adrin.jalali@gmail.com>
+Date:   Thu Jun 12 07:36:09 2025 +0200
+
+    DOC add reference to higher level functions in estimator_checks_generator (#31480)
+    
+    Co-authored-by: Virgil Chan <virchan.math@gmail.com>
+
+[33mcommit 780b393ad62ef63209f77aaae7051622134f0217[m
+Author: Christian Veenhuis <124370897+ChVeen@users.noreply.github.com>
+Date:   Thu Jun 12 02:32:13 2025 +0200
+
+    FIX: fix wrongly used `plt.show()` in examples (#31524)
+
+[33mcommit 1588ec9979d452c4329a07de90254a0ba37ee135[m
+Author: KALLA GANASEKHAR <ganasekharkalla@gmail.com>
+Date:   Wed Jun 11 17:42:10 2025 +0530
+
+    DOC: Add link to plot_ensemble_oob example  (#31457)
+
+[33mcommit 5509d2f25df983710f7aa0fc7e3d229b03cb9ac3[m
+Author: Stefanie Senger <91849487+StefanieSenger@users.noreply.github.com>
+Date:   Wed Jun 11 08:32:49 2025 +0200
+
+    MNT Fix docstring of _BaseComposition (#31484)
+
+[33mcommit 3962c282f2754f658c37c073bb99915be9046ec3[m
+Author: Somdutta Banerjee <banerjee.somdutta@gmail.com>
+Date:   Tue Jun 10 08:16:01 2025 -0700
+
+    DOC Added example comparing L1-based models to ARD user guide (#31425)
+
+[33mcommit 1fae098375f9670c5b472d5a3ca2d6bec5939b56[m
+Author: Ritvi Alagusankar <114499776+ritvi-alagusankar@users.noreply.github.com>
+Date:   Tue Jun 10 16:25:30 2025 +0530
+
+    FIX: Change limits of power_t param to [0, inf) (#31474)
+
+[33mcommit ab3d34e6ff2ea78c2c9c0367f2857a1a012fb993[m
+Author: SIKAI ZHANG <34108862+MatthewSZhang@users.noreply.github.com>
+Date:   Tue Jun 10 18:02:30 2025 +0800
+
+    MNT Add free-threaded wheel for Linux arm (#31513)
+
+[33mcommit 8bec6d05ad1425dbb1b54bb4ccd25fbcff215f1d[m
+Author: Shaurya Bisht <87357655+ShauryaDusht@users.noreply.github.com>
+Date:   Tue Jun 10 14:15:00 2025 +0530
+
+    DOC Add additional donation options to About page (#31379)
+
+[33mcommit 4f1038cbf3a13a5013b3486718515132e8a943e7[m
+Author: scikit-learn-bot <tjpfdev@gmail.com>
+Date:   Mon Jun 9 10:26:49 2025 +0200
+
+    :lock: :robot: CI Update lock files for main CI build(s) :lock: :robot: (#31508)
+    
+    Co-authored-by: Lock file bot <noreply@github.com>
+
+[33mcommit 02e59fe6ab7ab265ed857d7b318b7f11dc1800a3[m
+Author: scikit-learn-bot <tjpfdev@gmail.com>
+Date:   Mon Jun 9 10:25:58 2025 +0200
+
+    :lock: :robot: CI Update lock files for array-api CI build(s) :lock: :robot: (#31507)
+    
+    Co-authored-by: Lock file bot <noreply@github.com>
+
+[33mcommit a2b2f0e9ed2b5f1c19b7fc6353686075ce3975d3[m
+Author: scikit-learn-bot <tjpfdev@gmail.com>
+Date:   Mon Jun 9 10:24:27 2025 +0200
+
+    :lock: :robot: CI Update lock files for free-threaded CI build(s) :lock: :robot: (#31506)
+    
+    Co-authored-by: Lock file bot <noreply@github.com>
+
+[33mcommit c7397e78368bb03567b444fed04675777394daf0[m
+Author: scikit-learn-bot <tjpfdev@gmail.com>
+Date:   Mon Jun 9 10:23:51 2025 +0200
+
+    :lock: :robot: CI Update lock files for scipy-dev CI build(s) :lock: :robot: (#31505)
+    
+    Co-authored-by: Lock file bot <noreply@github.com>
+
+[33mcommit 34e46b049534450877584c358cc66b181a078a59[m
+Author: Jérémie du Boisberranger <jeremie@probabl.ai>
+Date:   Fri Jun 6 10:22:03 2025 +0200
+
+    MNT Update SECURITY.md for 1.7.0 (#31493)
+
+[33mcommit e0f23470fbc95d373bb4658307de1613c0d46d1d[m
+Author: Jérémie du Boisberranger <jeremie@probabl.ai>
+Date:   Fri Jun 6 10:20:12 2025 +0200
+
+    DOC Update news for 1.7.0 (#31492)
+
+[33mcommit 88410d6e90ee905eff5c849e46246a4b1f1787c1[m
+Author: Jérémie du Boisberranger <jeremie@probabl.ai>
+Date:   Fri Jun 6 10:19:50 2025 +0200
+
+    DOC Backport 1.7 changelog into the main branch (#31491)
+
+[33mcommit 73a8a656b8df6d02cf88ef8f9cf98373a3f42051[m
+Author: TJ Norred <tjnorred@gmail.com>
+Date:   Thu Jun 5 14:32:37 2025 +0000
+
+    DOC Add link for prediction latency plot example in SGD Regression#30621 (#31477)
+
+[33mcommit e0fd23644f002901bacece9a9f9d297b710df320[m
+Author: Jérémie du Boisberranger <jeremie@probabl.ai>
+Date:   Thu Jun 5 01:31:38 2025 +0200
+
+    DOC Don't use deprecated RocCurveDisplay kwargs (#31482)
+
+[33mcommit 90209c8cdda28462b0c199f3704721b5cc9923c9[m
+Author: Jérémie du Boisberranger <jeremie@probabl.ai>
+Date:   Wed Jun 4 19:14:27 2025 +0200
+
+    DOC Release highlights for 1.7 (#31469)
+    
+    Co-authored-by: Guillaume Lemaitre <guillaume@probabl.ai>
+
+[33mcommit c4a0043a646d7d1c8a883d115b7aa3db34384d21[m
+Author: Shivam <112275066+shivamchhuneja@users.noreply.github.com>
+Date:   Wed Jun 4 20:46:44 2025 +0530
+
+    DOC Add link to plot_monotonic_constraints.py in ensemble examples (#31471)
+    
+    Co-authored-by: Stefanie Senger <91849487+StefanieSenger@users.noreply.github.com>
+
+[33mcommit 7d0cbaf20f2a517139cad35540da72858fcb14ab[m
+Author: scikit-learn-bot <tjpfdev@gmail.com>
+Date:   Tue Jun 3 09:49:52 2025 +0200
+
+    :lock: :robot: CI Update lock files for free-threaded CI build(s) :lock: :robot: (#31464)
+    
+    Co-authored-by: Lock file bot <noreply@github.com>
+
+[33mcommit 58131e5c10882e6e9d5c617d6672cf73a955d048[m
+Author: scikit-learn-bot <tjpfdev@gmail.com>
+Date:   Tue Jun 3 09:49:08 2025 +0200
+
+    :lock: :robot: CI Update lock files for scipy-dev CI build(s) :lock: :robot: (#31463)
+    
+    Co-authored-by: Lock file bot <noreply@github.com>
+
+[33mcommit d11be4e73a7899c2d1d23aa0389f01cc61e24a99[m
+Author: scikit-learn-bot <tjpfdev@gmail.com>
+Date:   Tue Jun 3 09:46:36 2025 +0200
+
+    :lock: :robot
